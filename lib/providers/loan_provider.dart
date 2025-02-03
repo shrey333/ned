@@ -35,7 +35,7 @@ class LoanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  double get fees => loanAmount * 0.5; // 50% fee
+  double get fees => loanAmount * feePercentage / 100;
   double get totalRevenueShare => loanAmount + fees;
 
   int get expectedTransfers {
@@ -79,6 +79,8 @@ class LoanProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  double get feePercentage => (config?.feePercentage ?? 0) * 100;
 
   Future<void> fetchConfig() async {
     try {

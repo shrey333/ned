@@ -192,8 +192,9 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
                                             if (text.contains('.')) {
                                               final decimalPlaces =
                                                   text.split('.')[1];
-                                              if (decimalPlaces.length > 2)
+                                              if (decimalPlaces.length > 2) {
                                                 return oldValue;
+                                              }
                                             }
 
                                             return newValue;
@@ -301,6 +302,43 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
                                                   hintText: provider.config
                                                       ?.fundingPlaceholder,
                                                 ),
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter
+                                                      .allow(RegExp(r'[\d.]')),
+                                                  TextInputFormatter
+                                                      .withFunction(
+                                                          (oldValue, newValue) {
+                                                    try {
+                                                      final text =
+                                                          newValue.text;
+                                                      if (text.isEmpty)
+                                                        return newValue;
+
+                                                      // Only allow one decimal point
+                                                      if (text.contains('.') &&
+                                                          text.indexOf('.') !=
+                                                              text.lastIndexOf(
+                                                                  '.')) {
+                                                        return oldValue;
+                                                      }
+
+                                                      // Don't allow more than 2 decimal places
+                                                      if (text.contains('.')) {
+                                                        final decimalPlaces =
+                                                            text.split('.')[1];
+                                                        if (decimalPlaces
+                                                                .length >
+                                                            2) {
+                                                          return oldValue;
+                                                        }
+                                                      }
+
+                                                      return newValue;
+                                                    } catch (e) {
+                                                      return oldValue;
+                                                    }
+                                                  }),
+                                                ],
                                               ),
                                             ),
                                           ),
@@ -483,7 +521,7 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
                                   const Divider(height: 32),
                                   _buildResultRow(
                                     'Fees',
-                                    '(50%) ${_currencyFormat.format(provider.fees)}',
+                                    '(${provider.feePercentage}%) ${_currencyFormat.format(provider.fees)}',
                                   ),
                                   const Divider(height: 32),
                                   _buildResultRow(
@@ -501,6 +539,11 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
                                     'Expected completion date',
                                     DateFormat('MMMM d, y').format(
                                         provider.expectedCompletionDate),
+                                  ),
+                                  const Divider(height: 32),
+                                  _buildResultRow(
+                                    'Expected APR',
+                                    '${provider.expectedAPR.toStringAsFixed(2)}%',
                                   ),
                                 ],
                               ),
@@ -533,7 +576,7 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
-                        .withOpacity(0.8),
+                        .withValues(alpha: .8),
                   ),
             ),
           ),
@@ -548,36 +591,6 @@ class _LoanApplicationPageState extends State<LoanApplicationPage> {
                   ),
               textAlign: TextAlign.right,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ResultRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _ResultRow({
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ],
       ),
