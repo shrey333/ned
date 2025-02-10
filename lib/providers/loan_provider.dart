@@ -45,6 +45,13 @@ class LoanProvider with ChangeNotifier {
     return transfers.ceil();
   }
 
+  double get expectedAPR {
+    final now = DateTime.now();
+    return ((((feePercentage * loanAmount) / loanAmount) /
+            (expectedCompletionDate.difference(now).inDays)) *
+        365);
+  }
+
   DateTime get expectedCompletionDate {
     final now = DateTime.now();
 
@@ -69,7 +76,11 @@ class LoanProvider with ChangeNotifier {
     if (annualRevenue <= 0) return 0;
     const factor1 = 0.156;
     const factor2 = 6.2055;
-    return (factor1 / factor2 / annualRevenue) * (loanAmount * 10) * 100;
+    final tmpRevenuePercentage =
+        (factor1 / factor2 / annualRevenue) * (loanAmount * 10) * 100;
+    // return tmpRevenuePercentage;
+    return tmpRevenuePercentage.clamp(
+        config?.minRevenuePercentage ?? 0, config?.maxRevenuePercentage ?? 100);
   }
 
   int get repaymentDelay => _repaymentDelay;
